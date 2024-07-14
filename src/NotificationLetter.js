@@ -7,6 +7,7 @@ const NotificationLetter = () => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [images, setImages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -33,10 +34,20 @@ const NotificationLetter = () => {
     setCurrentPage(1); // Reset to first page on search
   }, [searchTerm, data]);
 
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    const imageUrls = files.map((file) => URL.createObjectURL(file));
+    setImages(imageUrls);
+  };
+
   const handleDownloadAll = async () => {
     const zip = new JSZip();
     const documentPromises = filteredData.map(async (item, index) => {
-      const blob = await generateDocument(item.org_name, item.address, []);
+      const blob = await generateDocument(
+        item.org_name,
+        item.address,
+        images.slice(0, 2)
+      );
       zip.file(`Notification_Letter_${item.org_name}.docx`, blob);
     });
 
@@ -51,10 +62,6 @@ const NotificationLetter = () => {
   const paginatedData = filteredData.slice(startIndex, endIndex);
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-
   return (
     <div>
       <div className="container">
@@ -63,7 +70,7 @@ const NotificationLetter = () => {
           <div className="card-body">
             <h1>Notification Letter</h1>
             <div className="row">
-              <div className="col-md-8">
+              <div className="col-md-6">
                 <label>Search</label>
                 <input
                   type="search"
@@ -73,7 +80,18 @@ const NotificationLetter = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <div className="col-md-4 mt-4">
+              <div className="col-md-4">
+                <label htmlFor="imageUpload">Upload Additional Images:</label>
+                <input
+                  className="form-control"
+                  type="file"
+                  id="imageUpload"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+              </div>
+              <div className="col-md-2 mt-4">
                 <button className="btn btn-primary" onClick={handleDownloadAll}>
                   Download All
                 </button>
@@ -85,7 +103,7 @@ const NotificationLetter = () => {
                 {filteredData.length} Organization
                 {filteredData.length !== 1 ? "s" : ""}
               </h5>
-              <table className="table bordered stripped">
+              <table className="table table-bordered table-striped">
                 <thead>
                   <tr>
                     <th>Organization Name</th>
@@ -102,7 +120,11 @@ const NotificationLetter = () => {
                         <button
                           className="btn btn-primary"
                           onClick={() =>
-                            generateDocument(item.org_name, item.address, [])
+                            generateDocument(
+                              item.org_name,
+                              item.address,
+                              images.slice(0, 2)
+                            )
                           }
                         >
                           Download
@@ -113,56 +135,25 @@ const NotificationLetter = () => {
                 </tbody>
               </table>
 
-              <nav aria-label="Page navigation example">
-                <ul className="pagination">
-                  <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
-                  >
-                    <a
-                      className="page-link"
-                      href="#"
-                      aria-label="Previous"
-                      onClick={() => handlePageChange(currentPage - 1)}
-                    >
-                      <span aria-hidden="true">&laquo;</span>
-                      <span className="sr-only">Previous</span>
-                    </a>
-                  </li>
-                  {Array.from({ length: totalPages }, (_, index) => (
-                    <li
-                      key={index + 1}
-                      className={`page-item ${
-                        currentPage === index + 1 ? "active" : ""
-                      }`}
-                    >
-                      <a
-                        className="page-link"
-                        href="#"
-                        onClick={() => handlePageChange(index + 1)}
-                      >
-                        {index + 1}
-                      </a>
-                    </li>
-                  ))}
-                  <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
-                  >
-                    <a
-                      className="page-link"
-                      href="#"
-                      aria-label="Next"
-                      onClick={() => handlePageChange(currentPage + 1)}
-                    >
-                      <span aria-hidden="true">&raquo;</span>
-                      <span className="sr-only">Next</span>
-                    </a>
-                  </li>
-                </ul>
-              </nav>
+              <div className="pagination">
+                <button
+                  className="btn btn-primary"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                >
+                  Previous
+                </button>
+                <span className="mx-2">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  className="btn btn-primary"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
         </div>
