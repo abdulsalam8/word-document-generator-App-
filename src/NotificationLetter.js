@@ -68,7 +68,7 @@ const NotificationLetter = () => {
               item.address,
               []
             );
-            zip.file(`Notification_Letter_${item.org_name}.docx`, blob);
+            zip.file(`Notification_Letter_${item.tax_station}.docx`, blob);
           });
 
           await Promise.all(documentPromises);
@@ -94,7 +94,7 @@ const NotificationLetter = () => {
 
     localStorage.removeItem("downloadProgress"); // Clear progress after successful download
     const content = await zip.generateAsync({ type: "blob" });
-    saveAs(content, "Notification_Letters.zip");
+    saveAs(content, "Notification_Letters_tax_station.zip");
   };
 
   // Pagination logic
