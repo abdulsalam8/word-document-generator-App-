@@ -6,6 +6,16 @@ const sampleLetter = (orgName, address) => {
     new Paragraph({
       children: [
         new TextRun({
+          text: "",
+        }),
+      ],
+      spacing: {
+        before: 1000,
+      },
+    }),
+    new Paragraph({
+      children: [
+        new TextRun({
           text: "The Managing Director",
           bold: true,
           font: "Arial",
