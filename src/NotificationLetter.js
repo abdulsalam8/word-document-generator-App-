@@ -14,7 +14,9 @@ const NotificationLetter = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await fetch("http://localhost:4559/get-org-letters");
+        const response = await fetch(
+          "http://192.168.1.72:4559/get-org-letters"
+        );
         const json = await response.json();
         setData(json.results[0]);
         setFilteredData(json.results[0]); // Initialize filtered data
@@ -42,16 +44,55 @@ const NotificationLetter = () => {
 
   const handleDownloadAll = async () => {
     const zip = new JSZip();
-    const documentPromises = filteredData.map(async (item, index) => {
-      const blob = await generateDocument(
-        item.org_name,
-        item.address,
-        images.slice(0, 2)
-      );
-      zip.file(`Notification_Letter_${item.org_name}.docx`, blob);
-    });
+    const chunkSize = 100; // Process 100 items at a time
+    const totalChunks = Math.ceil(filteredData.length / chunkSize);
+    const maxRetries = 3; // Maximum number of retries per chunk
+    let processedChunks = 0; // Number of chunks processed successfully
 
-    await Promise.all(documentPromises);
+    // Load progress from local storage if available
+    const savedProgress = localStorage.getItem("downloadProgress");
+    if (savedProgress) {
+      processedChunks = JSON.parse(savedProgress);
+    }
+
+    for (let i = processedChunks; i < totalChunks; i++) {
+      let success = false;
+      let retries = 0;
+
+      while (!success && retries < maxRetries) {
+        try {
+          const chunk = filteredData.slice(i * chunkSize, (i + 1) * chunkSize);
+          const documentPromises = chunk.map(async (item) => {
+            const blob = await generateDocument(
+              item.org_name,
+              item.address,
+              []
+            );
+            zip.file(`Notification_Letter_${item.org_name}.docx`, blob);
+          });
+
+          await Promise.all(documentPromises);
+          success = true;
+          processedChunks++;
+          localStorage.setItem(
+            "downloadProgress",
+            JSON.stringify(processedChunks)
+          );
+          console.log(processedChunks.length, "jhhhhhhhhs");
+        } catch (error) {
+          console.error(`Error processing chunk ${i}, retrying...`, error);
+          retries++;
+          if (retries === maxRetries) {
+            alert(
+              `Failed to process chunk ${i} after ${maxRetries} retries. Aborting.`
+            );
+            return;
+          }
+        }
+      }
+    }
+
+    localStorage.removeItem("downloadProgress"); // Clear progress after successful download
     const content = await zip.generateAsync({ type: "blob" });
     saveAs(content, "Notification_Letters.zip");
   };
