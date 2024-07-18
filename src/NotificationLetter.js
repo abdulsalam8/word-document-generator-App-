@@ -44,23 +44,21 @@ const NotificationLetter = () => {
 
   const handleDownloadAll = async () => {
     const zip = new JSZip();
+    const chunkSize = 100; // Process 100 items at a time
+    const totalChunks = Math.ceil(filteredData.length / chunkSize);
 
-    // Ensure to use the full filteredData array, not the paginated one
-    const documentPromises = data.map(async (item, index) => {
-      try {
+    for (let i = 0; i < totalChunks; i++) {
+      const chunk = filteredData.slice(i * chunkSize, (i + 1) * chunkSize);
+      const documentPromises = chunk.map(async (item) => {
         const blob = await generateDocument(item.org_name, item.address, []);
-        console.log(`Generated document for ${item.org_name}`);
         zip.file(`Notification_Letter_${item.org_name}.docx`, blob);
-      } catch (error) {
-        console.error(`Error generating document for ${item.org_name}:`, error);
-      }
-    });
+      });
 
-    await Promise.all(documentPromises);
-    console.log("All documents generated, creating zip file...");
+      await Promise.all(documentPromises);
+    }
+
     const content = await zip.generateAsync({ type: "blob" });
     saveAs(content, "Notification_Letters.zip");
-    console.log("Zip file created and download initiated");
   };
 
   // Pagination logic
