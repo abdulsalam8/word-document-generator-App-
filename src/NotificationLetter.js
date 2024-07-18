@@ -42,10 +42,23 @@ const NotificationLetter = () => {
     setImages(imageUrls);
   };
 
-  const handleDownloadAll = () => {
-    filteredData.forEach((item) =>
-      generateDocument(item.org_name, item.address, [])
-    );
+  const handleDownloadAll = async () => {
+    const zip = new JSZip();
+    const chunkSize = 100; // Process 100 items at a time
+    const totalChunks = Math.ceil(filteredData.length / chunkSize);
+
+    for (let i = 0; i < totalChunks; i++) {
+      const chunk = filteredData.slice(i * chunkSize, (i + 1) * chunkSize);
+      const documentPromises = chunk.map(async (item) => {
+        const blob = await generateDocument(item.org_name, item.address, []);
+        zip.file(`Notification_Letter_${item.org_name}.docx`, blob);
+      });
+
+      await Promise.all(documentPromises);
+    }
+
+    const content = await zip.generateAsync({ type: "blob" });
+    saveAs(content, "Notification_Letters.zip");
   };
 
   // Pagination logic
