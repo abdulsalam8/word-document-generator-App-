@@ -44,30 +44,36 @@ const NotificationLetter = () => {
 
   const handleDownloadAll = async () => {
     const zip = new JSZip();
-    const documentPromises = filteredData.map(async (item, index) => {
-      const blob = await generateDocument(
-        item.org_name,
-        item.address,
-        images.slice(0, 2)
-      );
-      zip.file(`Notification_Letter_${item.org_name}.docx`, blob);
+
+    // Ensure to use the full filteredData array, not the paginated one
+    const documentPromises = data.map(async (item, index) => {
+      try {
+        const blob = await generateDocument(item.org_name, item.address, []);
+        console.log(`Generated document for ${item.org_name}`);
+        zip.file(`Notification_Letter_${item.org_name}.docx`, blob);
+      } catch (error) {
+        console.error(`Error generating document for ${item.org_name}:`, error);
+      }
     });
 
     await Promise.all(documentPromises);
+    console.log("All documents generated, creating zip file...");
     const content = await zip.generateAsync({ type: "blob" });
     saveAs(content, "Notification_Letters.zip");
+    console.log("Zip file created and download initiated");
   };
 
   // Pagination logic
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedData = filteredData.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  // const startIndex = (currentPage - 1) * itemsPerPage;
+  // const endIndex = startIndex + itemsPerPage;
+  // const paginatedData = filteredData.slice(startIndex, endIndex);
+  // const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   return (
     <div>
       <div className="container">
         <div className="card">
+          {/* {JSON.stringify(filteredData.length)} */}
           <div className="card-header">Notification Letter</div>
           <div className="card-body">
             <h1>Notification Letter</h1>
@@ -114,7 +120,7 @@ const NotificationLetter = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedData.map((item, index) => (
+                  {filteredData.map((item, index) => (
                     <tr key={index}>
                       <td>{item.org_name}</td>
                       <td>{item.address}</td>
@@ -137,7 +143,7 @@ const NotificationLetter = () => {
                 </tbody>
               </table>
 
-              <div className="pagination">
+              {/* <div className="pagination">
                 <button
                   className="btn btn-primary"
                   disabled={currentPage === 1}
@@ -155,7 +161,7 @@ const NotificationLetter = () => {
                 >
                   Next
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
