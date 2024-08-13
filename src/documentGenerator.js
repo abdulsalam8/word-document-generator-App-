@@ -1,6 +1,6 @@
 import { Document, Packer, Paragraph, TextRun, ImageRun } from "docx";
 import { saveAs } from "file-saver";
-
+import logo from "./kigra.jpg"
 const sampleLetter = (orgName, address) => {
   return [
     new Paragraph({
