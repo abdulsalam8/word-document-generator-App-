@@ -15,7 +15,7 @@ const NotificationLetter = () => {
     const getData = async () => {
       try {
         const response = await fetch(
-          "http://192.168.1.65:4559/get-org-letters"
+          "http://192.168.1.33:4559/get-org-letters"
         );
         const json = await response.json();
         setData(json.results[0]);
