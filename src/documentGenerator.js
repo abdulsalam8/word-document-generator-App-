@@ -128,12 +128,91 @@ export const generateDocument = async (orgName, address, imagePaths = []) => {
   try {
     const doc = new Document({
       sections: [
-        {
-          properties: {},
-          children: sampleLetter(orgName, address),
+        
+          {
+            headers: {
+                default: new Header({
+                    children: [
+                        new Table({
+                            rows: [
+                                new TableRow({
+                                    children: [
+                                        new TableCell({
+                                            width: {
+                                                size: 30,
+                                                type: WidthType.PERCENTAGE,
+                                            },
+                                            children: [
+                                                // Add logo
+                                                Media.addImage(doc, logo, 100, 100), // Adjust size as needed
+                                            ],
+                                        }),
+                                        new TableCell({
+                                            width: {
+                                                size: 70,
+                                                type: WidthType.PERCENTAGE,
+                                            },
+                                            children: [
+                                                new Paragraph({
+                                                    text: "KANO STATE INTERNAL REVENUE SERVICE (KIRS)",
+                                                    bold: true,
+                                                    alignment: AlignmentType.CENTER,
+                                                    font: "Arial",
+                                                    size: 32, // 16 pt
+                                                    color: "006400", // Green color
+                                                }),
+                                                new Paragraph({
+                                                    text: "Revenue House, No. 2 Bank Road",
+                                                    alignment: AlignmentType.CENTER,
+                                                    font: "Arial",
+                                                    size: 24, // 12 pt
+                                                }),
+                                                new Paragraph({
+                                                    text: "tax@kirs.gov.ng | info@kirs.gov.ng | www.kirs.gov.ng",
+                                                    alignment: AlignmentType.CENTER,
+                                                    font: "Arial",
+                                                    size: 24, // 12 pt
+                                                }),
+                                            ],
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }),
+                    ],
+                }),
+            },
+            children: [
+                new Paragraph({
+                    text: "Your document content goes here...",
+                    spacing: { after: 200 }, // Adjust spacing after the paragraph
+                }),
+            ],
+            footers: {
+                default: new Footer({
+                    children: [
+                        new Paragraph({
+                            text: "Footer content here...",
+                            alignment: AlignmentType.CENTER,
+                            font: "Arial",
+                            size: 24, // 12 pt
+                        }),
+                    ],
+                }),
+            },
         },
+        ...sampleLetter(orgName, address),
       ],
     });
+
+    // const doc = new Document({
+    //   sections: [
+    //     {
+    //       properties: {},
+    //       children: sampleLetter(orgName, address),
+    //     },
+    //   ],
+    // });
 
     for (let i = 0; i < imagePaths.length; i++) {
       const imageUrl = imagePaths[i];
